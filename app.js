@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const request  = require("request");
+const https = require("https");
 
 const app = new express();
 
@@ -12,13 +13,54 @@ app.get("/", function(req, res){
 })
 
 app.post("/", function(req,res){
-    const data = req.body;
-    let firstName = data.firstName;
-    let lastName = data.lastName;
-    let email = data.email;
-    console.log(data);
-})
+    //get info from form
+    const info = req.body;
+    const firstName = info.firstName;
+    const lastName = info.lastName;
+    const email = info.email;
+    // console.log(info);
+    //crete oject to send to mailchimp api call
+    const data = {
+        members : [
+            {
+                email_address : email,
+                status : "subscribed",
+                merge_fields : {
+                    FNAME : firstName,
+                    LNAME : lastName
+                }
+            }
+        ]
+    }
+
+    //convert object to string
+    const jsonData = JSON.stringify(data);
+
+    //make request
+    const url  = "https://us8.api.mailchimp.com/3.0/lists/f667fcf01f";
+    const options = {
+        method : "POST",
+        auth : "prasad:1ddf575a183695f6ed9674a260c6cd79-us8"
+    }
+
+    const request = https.request(url, options, function(response){
+        response.on("data", function(data){
+            console.log(JSON.parse(data));
+        })
+    });
+
+    request.write(jsonData);
+    request.end();
+
+});
 
 app.listen(3000, function(){
     console.log("Server is running on port 3000");
-})
+});
+
+
+// Api Key
+// 1ddf575a183695f6ed9674a260c6cd79-us8
+
+// List Id
+// f667fcf01f
