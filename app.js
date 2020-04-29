@@ -44,14 +44,27 @@ app.post("/", function(req,res){
     }
 
     const request = https.request(url, options, function(response){
+        //redirect based on status code
+        if(response.statusCode == 200){
+            //res.send("Sucessfully subscribed!");
+            res.sendFile(__dirname + "/success.html");
+        } else{
+            //res.send("There was an error with signing up, please try again!");
+            res.sendFile(__dirname + "/failure.html");
+        }
+
         response.on("data", function(data){
             console.log(JSON.parse(data));
         })
     });
 
-    request.write(jsonData);
+    // request.write(jsonData);
     request.end();
 
+});
+
+app.post("/failure", function(req, res){
+    res.redirect("/");
 });
 
 app.listen(3000, function(){
